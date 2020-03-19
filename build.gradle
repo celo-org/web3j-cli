@@ -43,7 +43,9 @@ apply {
 }
 
 repositories {
-
+    flatDir {
+      dirs new File('/Users/cmcewen/celo/web3j/build/libs')
+    }
     maven { url "https://dl.bintray.com/ethereum/maven/" }
 }
 
@@ -63,11 +65,11 @@ distTar {
 }
 
 dependencies {
-    implementation "org.web3j:codegen:$web3jVersion",
-            "org.web3j:contracts:$web3jVersion",
-            "org.web3j:core:$web3jVersion",
-            "org.web3j:crypto:$web3jVersion",
-            "org.web3j:hosted-providers:$web3jVersion",
+    implementation files('/Users/cmcewen/celo/web3j/codegen/build/libs/codegen-4.6.0-SNAPSHOT.jar'),
+            files('/Users/cmcewen/celo/web3j/contracts/build/libs/contracts-4.6.0-SNAPSHOT.jar'),
+            files('/Users/cmcewen/celo/web3j/core/build/libs/core-4.6.0-SNAPSHOT.jar'),
+            files('/Users/cmcewen/celo/web3j/crypto/build/libs/crypto-4.6.0-SNAPSHOT.jar'),
+            files('/Users/cmcewen/celo/web3j/hosted-providers/build/libs/hosted-providers-4.6.0-SNAPSHOT.jar'),
             "info.picocli:picocli:$picocli",
             files('libs/smartcheck.jar'),
             "javax.xml.bind:jaxb-api:2.2.11",

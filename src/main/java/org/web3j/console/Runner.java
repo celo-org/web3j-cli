@@ -12,6 +12,14 @@
  */
 package org.web3j.console;
 
+import static org.web3j.codegen.SolidityFunctionWrapperGenerator.COMMAND_SOLIDITY;
+import static org.web3j.console.project.ProjectCreator.COMMAND_NEW;
+import static org.web3j.console.project.ProjectImporter.COMMAND_IMPORT;
+import static org.web3j.console.project.UnitTestCreator.COMMAND_GENERATE_TESTS;
+import static org.web3j.utils.Collection.tail;
+
+import java.math.BigInteger;
+
 import org.web3j.codegen.Console;
 import org.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.web3j.codegen.TruffleJsonFunctionWrapperGenerator;
@@ -21,13 +29,11 @@ import org.web3j.console.project.ProjectCreator;
 import org.web3j.console.project.ProjectImporter;
 import org.web3j.console.project.UnitTestCreator;
 import org.web3j.console.update.Updater;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Version;
-
-import static org.web3j.codegen.SolidityFunctionWrapperGenerator.COMMAND_SOLIDITY;
-import static org.web3j.console.project.ProjectCreator.COMMAND_NEW;
-import static org.web3j.console.project.ProjectImporter.COMMAND_IMPORT;
-import static org.web3j.console.project.UnitTestCreator.COMMAND_GENERATE_TESTS;
-import static org.web3j.utils.Collection.tail;
 
 /** Main entry point for running command line utilities. */
 public class Runner {
@@ -91,6 +97,12 @@ public class Runner {
                 case COMMAND_GENERATE_TESTS:
                     UnitTestCreator.main(tail(args));
                     break;
+                case "block":
+                    Web3j web3j = Web3j.build(new HttpService("https://alfajores-forno.celo-testnet.org"));
+                    BigInteger blockNumber = new BigInteger("761206");
+                    EthBlock.Block block = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(blockNumber), true).send().getResult();
+                    EthBlock.TransactionResult<EthBlock.TransactionObject> result = block.getTransactions().get(0);
+                    Console.exitSuccess("Fee Currency: \n" + result.get().getFeeCurrency());
                 default:
                     Console.exitError(USAGE);
             }
