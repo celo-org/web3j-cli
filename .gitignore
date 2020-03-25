@@ -48,3 +48,6 @@ docs/build
 .project
 .classpath
 bin
+
+# VSCode
+.vscode/
