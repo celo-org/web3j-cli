@@ -12,6 +12,13 @@
  */
 package org.web3j.console;
 
+import static org.web3j.codegen.SolidityFunctionWrapperGenerator.COMMAND_SOLIDITY;
+import static org.web3j.console.project.ProjectCreator.COMMAND_NEW;
+import static org.web3j.console.project.ProjectImporter.COMMAND_IMPORT;
+import static org.web3j.console.project.UnitTestCreator.COMMAND_GENERATE_TESTS;
+import static org.web3j.crypto.Hash.sha256;
+import static org.web3j.utils.Collection.tail;
+
 import java.math.BigInteger;
 
 import org.web3j.codegen.Console;
@@ -32,12 +39,6 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Version;
 
-import static org.web3j.codegen.SolidityFunctionWrapperGenerator.COMMAND_SOLIDITY;
-import static org.web3j.console.project.ProjectCreator.COMMAND_NEW;
-import static org.web3j.console.project.ProjectImporter.COMMAND_IMPORT;
-import static org.web3j.console.project.UnitTestCreator.COMMAND_GENERATE_TESTS;
-import static org.web3j.crypto.Hash.sha256;
-import static org.web3j.utils.Collection.tail;
 
 /** Main entry point for running command line utilities. */
 public class Runner {
@@ -106,7 +107,7 @@ public class Runner {
                     web3j =
                             Web3j.build(
                                     new HttpService("https://alfajores-forno.celo-testnet.org"));
-                    BigInteger blockNumber = new BigInteger("761206");
+                    BigInteger blockNumber = new BigInteger("60655");
                     EthBlock.Block block =
                             web3j.ethGetBlockByNumber(
                                             DefaultBlockParameter.valueOf(blockNumber), true)
@@ -139,7 +140,7 @@ public class Runner {
                             StableToken.load(
                                     // TODO [amyslawson] move contract java wrapper generation into
                                     // web3j
-                                    "0xE94ad4f222e3b4E6a1fdf209801E5f76Ff30d50F",
+                                    "0xa561131a1C8aC25925FB848bCa45A74aF61e5A38",
                                     web3j,
                                     credentials,
                                     new StaticGasProvider(
@@ -152,22 +153,20 @@ public class Runner {
                     System.out.println(
                             "BEFORE SENDER: "
                                     + stableToken
-                                            .balanceOf("0x0ed3510bf7adcce8c48eddf05df353407c578da5")
+                                            .balanceOf(credentials.getAddress())
                                             .send());
                     System.out.println(
                             "BEFORE RECEVER: "
                                     + stableToken
-                                            .balanceOf("0x7963325c601bec69b9b43dd3ebd07c4911106c93")
+                                            .balanceOf(to)
                                             .send());
                     stableToken
-                            .transfer(
-                                    "0x7963325c601bec69b9b43dd3ebd07c4911106c93",
-                                    BigInteger.valueOf(2000))
+                            .transfer(to, value)
                             .send();
                     System.out.println(
                             "AFTER RECEVER: "
                                     + stableToken
-                                            .balanceOf("0x7963325c601bec69b9b43dd3ebd07c4911106c93")
+                                            .balanceOf(to)
                                             .send());
                     Console.exitSuccess(
                             String.format("Exchanged: %s %s from to %s", value, name, to));
