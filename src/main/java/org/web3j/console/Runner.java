@@ -12,14 +12,8 @@
  */
 package org.web3j.console;
 
-import static org.web3j.codegen.SolidityFunctionWrapperGenerator.COMMAND_SOLIDITY;
-import static org.web3j.console.project.ProjectCreator.COMMAND_NEW;
-import static org.web3j.console.project.ProjectImporter.COMMAND_IMPORT;
-import static org.web3j.console.project.UnitTestCreator.COMMAND_GENERATE_TESTS;
-import static org.web3j.crypto.Hash.sha256;
-import static org.web3j.utils.Collection.tail;
-
 import java.math.BigInteger;
+import java.util.List;
 
 import org.web3j.codegen.Console;
 import org.web3j.codegen.SolidityFunctionWrapperGenerator;
@@ -39,6 +33,13 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Version;
 
+import static org.web3j.codegen.SolidityFunctionWrapperGenerator.COMMAND_SOLIDITY;
+import static org.web3j.console.project.ProjectCreator.COMMAND_NEW;
+import static org.web3j.console.project.ProjectImporter.COMMAND_IMPORT;
+import static org.web3j.console.project.UnitTestCreator.COMMAND_GENERATE_TESTS;
+import static org.web3j.crypto.Hash.sha256;
+import static org.web3j.crypto.Hash.sha3;
+import static org.web3j.utils.Collection.tail;
 
 /** Main entry point for running command line utilities. */
 public class Runner {
@@ -152,24 +153,35 @@ public class Runner {
                     // TODO [amyslawson] remove print statements and convert to tests
                     System.out.println(
                             "BEFORE SENDER: "
-                                    + stableToken
-                                            .balanceOf(credentials.getAddress())
-                                            .send());
-                    System.out.println(
-                            "BEFORE RECEVER: "
-                                    + stableToken
-                                            .balanceOf(to)
-                                            .send());
-                    stableToken
-                            .transfer(to, value)
-                            .send();
-                    System.out.println(
-                            "AFTER RECEVER: "
-                                    + stableToken
-                                            .balanceOf(to)
-                                            .send());
+                                    + stableToken.balanceOf(credentials.getAddress()).send());
+                    System.out.println("BEFORE RECEVER: " + stableToken.balanceOf(to).send());
+                    stableToken.transfer(to, value).send();
+                    System.out.println("AFTER RECEVER: " + stableToken.balanceOf(to).send());
                     Console.exitSuccess(
                             String.format("Exchanged: %s %s from to %s", value, name, to));
+                case "lookupIdentifer":
+                    String phoneNumber = args[1]; // in the form +15555555555
+                    web3j =
+                            Web3j.build(
+                                    new HttpService("https://alfajores-forno.celo-testnet.org"));
+                    ecKeyPair = ECKeyPair.create(sha256("test_sk".getBytes()));
+                    credentials = Credentials.create(ecKeyPair);
+
+                    Attestations attestations =
+                                Attestations.load(
+                                        "0x65CE97F6f928B1F6e74de2d8829A64329F9E0ec3",
+                                        web3j,
+                                        credentials,
+                                        new StaticGasProvider(
+                                                BigInteger.valueOf(2000000000),
+                                                BigInteger.valueOf(20000000)));
+                    // Right now this is just a sha3 of the phone number, but in the future the phoneNumber will be salted
+                    List identifiers = attestations.lookupAccountsForIdentifier(sha3(phoneNumber.getBytes())).send();
+                    // WARNING -- this address is associated with the identifier (phone number) but has not been checked for 
+                    // verification.  This is ok for MVP but will need to be updated for production
+                    String unCheckedFirstAddress = identifiers.get(0)
+                    Console.exitSuccess(
+                        String.format("First address this phone number %s is associated with: %s", phoneNumber, unCheckedFirstAddress));
                 default:
                     Console.exitError(USAGE);
             }
